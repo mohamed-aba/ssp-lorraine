@@ -1,6 +1,6 @@
 # Sites et sols pollués en Lorraine — hiérarchisation multicritère
 
-Carte interactive : **https://TON-NOM.github.io/ssp-lorraine/**
+Carte interactive : **[https://mohamed-aba.github.io/ssp-lorraine/](https://mohamed-aba.github.io/ssp-lorraine/)**
 
 Hiérarchisation de **2 444 sites potentiellement pollués** sur deux métropoles lorraines
 (Metz Métropole : 759 sites · Métropole du Grand Nancy : 1 685 sites), à partir de données publiques.
