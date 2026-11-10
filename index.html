@@ -295,8 +295,8 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
     </div>
     <div class="rules">
       <div class="rule" style="border-color:var(--p1)"><b>P1</b>score 27 et pollution active</div>
-      <div class="rule" style="border-color:var(--p2)"><b>P2</b>27 sans pollution active, ou 18 avec</div>
-      <div class="rule" style="border-color:var(--p3)"><b>P3</b>score 18</div>
+      <div class="rule" style="border-color:var(--p2)"><b>P2</b>27 sans pollution active, ou 18 avec pollution active</div>
+      <div class="rule" style="border-color:var(--p3)"><b>P3</b>score 18 sans pollution active</div>
       <div class="rule" style="border-color:var(--p4)"><b>P4</b>score de 12 ou moins</div>
     </div>
   </div>
@@ -340,6 +340,8 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
     });
   };
   var num = function (v) { var n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+  var NOM = function (p) { return p.nom_etablissement || "Établissement sans nom (CASIAS)"; };
+  var COM = function (p) { return p.nom_commune || "Commune non renseignée"; };
   var norm = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); };
 
   var map = L.map("map", { zoomControl: false, preferCanvas: true });
@@ -379,8 +381,8 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
     var link = p.fiche_risque
       ? "<a class='pp-link' href='" + esc(p.fiche_risque) + "' target='_blank' rel='noopener'>Fiche Géorisques ↗</a>" : "";
     return "<div class='pp-band' style='background:" + col + "'>" +
-      "<div class='pr'>" + esc(pr) + " · priorité " + LIB[pr] + (p.rang != null ? " · rang " + esc(p.rang) : "") + "</div>" +
-      "<h3>" + esc(p.nom_etablissement) + "</h3><div class='cm'>" + esc(p.nom_commune) + "</div></div>" +
+      "<div class='pr'>" + esc(pr) + " · priorité " + LIB[pr] + (p.rang_aff ? " · rang " + p.rang_aff : "") + "</div>" +
+      "<h3>" + esc(NOM(p)) + "</h3><div class='cm'>" + esc(COM(p)) + "</div></div>" +
       "<div class='pp-body'><div class='pp-score'><b>" + esc(p.score) + "</b><span>/ 27</span></div>" +
       "<div class='fac'><b>S</b><span>Source</span>" + pips(num(p.S)) + "</div>" +
       "<div class='fac'><b>T</b><span>Transfert</span>" + pips(num(p.T)) + "</div>" +
@@ -394,6 +396,11 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
       title = document.getElementById("listTitle"), prios = document.getElementById("prios"),
       bar = document.getElementById("bar"), msg = null;
   var NOMS = { tout: "Metz Métropole et Grand Nancy", metz: VILLES.metz.nom, nancy: VILLES.nancy.nom };
+
+  function cmp(a, b) {
+    return PRIOS.indexOf(a.pr) - PRIOS.indexOf(b.pr) ||
+      (num(a.p.rang) || 1e9) - (num(b.p.rang) || 1e9) || num(b.p.score) - num(a.p.score);
+  }
 
   function vider() {
     if (!S) return;
@@ -437,12 +444,16 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
         var m = L.circleMarker([c[1], c[0]], {
           radius: R[pr], color: "#fff", weight: pr === "P1" ? 2 : 1.2,
           fillColor: C[pr], fillOpacity: pr === "P4" ? .75 : .95
-        }).bindPopup(popup(p), { maxWidth: 300, autoPanPadding: [30, 30] });
+        }).bindPopup(function () { return popup(p); }, { maxWidth: 300, autoPanPadding: [30, 30] });
         // info-bulle au survol : nom et priorité
-        m.bindTooltip(esc(p.nom_etablissement) + " · " + pr, { direction: "top", offset: [0, -6] });
+        m.bindTooltip(esc(NOM(p)) + " · " + pr, { direction: "top", offset: [0, -6] });
         m.addTo(groups[pr]); counts[pr]++;
-        markers.push({ m: m, p: p, pr: pr, ville: k, key: norm(p.nom_etablissement + " " + p.nom_commune) });
+        markers.push({ m: m, p: p, pr: pr, ville: k, key: norm((p.nom_etablissement || "") + " " + (p.nom_commune || "")) });
       });
+    });
+    // rang affiché : priorité d'abord (P1 avant P2…), puis rang d'origine, puis score
+    keys.forEach(function (k) {
+      markers.filter(function (x) { return x.ville === k; }).sort(cmp).forEach(function (x, i) { x.p.rang_aff = i + 1; });
     });
     ORDER.forEach(function (p) { groups[p].addTo(map); });
     S = { mode: mode, keys: keys, ctx: ctx, groups: groups, markers: markers, counts: counts, total: markers.length };
@@ -519,7 +530,7 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
     var term = norm(q.value.trim());
     var rows = S.markers.filter(function (x) {
       return map.hasLayer(S.groups[x.pr]) && (!term || x.key.indexOf(term) !== -1);
-    }).sort(function (a, b) { return a.ville < b.ville ? -1 : a.ville > b.ville ? 1 : num(a.p.rang) - num(b.p.rang); });
+    }).sort(function (a, b) { return a.ville < b.ville ? -1 : a.ville > b.ville ? 1 : cmp(a, b); });
     var shown;
     if (term) {
       title.textContent = rows.length + " résultat" + (rows.length > 1 ? "s" : "");
@@ -540,8 +551,8 @@ header.top h1{font-family:"Archivo",system-ui,sans-serif;font-stretch:75%;font-w
       }
       var li = document.createElement("li");
       li.tabIndex = 0;
-      li.innerHTML = "<span class='rk' style='background:" + C[x.pr] + "'>" + esc(x.p.rang) + "</span>" +
-        "<span class='nm'>" + esc(x.p.nom_etablissement) + "<small>" + esc(x.p.nom_commune) + " · " + x.pr + "</small></span>" +
+      li.innerHTML = "<span class='rk' style='background:" + C[x.pr] + "'>" + x.p.rang_aff + "</span>" +
+        "<span class='nm'>" + esc(NOM(x.p)) + "<small>" + esc(COM(x.p)) + " · " + x.pr + "</small></span>" +
         "<span class='sc'>" + esc(x.p.score) + "</span>";
       var go = function () {
         map.flyTo(x.m.getLatLng(), Math.max(map.getZoom(), 16), { duration: .8 });
