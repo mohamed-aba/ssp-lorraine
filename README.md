@@ -10,9 +10,9 @@ Chaque site reçoit une note de 1 à 3 pour trois facteurs, selon la logique sou
 
 | Facteur | Ce qu'il mesure | Données |
 |---|---|---|
-| **S** Source | potentiel polluant de l'activité, pollution instruite | CASIAS, InfoSols, SIS (Géorisques) |
-| **T** Transfert | perméabilité du sous-sol, distance à l'eau de surface | BD Charm-50 (BRGM), BD TOPO (IGN) |
-| **C** Cibles | établissements sensibles < 100 m, logements dans 300 m | OpenStreetMap, BD TOPO, INSEE |
+| **S**ource | potentiel polluant de l'activité, pollution instruite | CASIAS, InfoSols, SIS (Géorisques) |
+| **T**ransfert | perméabilité du sous-sol, distance à l'eau de surface | BD Charm-50 (BRGM), BD TOPO (IGN) |
+| **C**ibles | établissements sensibles < 100 m, logements dans 300 m | OpenStreetMap, BD TOPO, INSEE |
 
 **Score = S × T × C** (1 à 27), puis 4 classes de priorité :
 P1 = 27 et pollution active · P2 = 27, ou 18 avec pollution active · P3 = 18 · P4 ≤ 12.
