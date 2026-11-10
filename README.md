@@ -15,7 +15,7 @@ Chaque site reçoit une note de 1 à 3 pour trois facteurs, selon la logique sou
 | **C**ibles | établissements sensibles < 100 m, logements dans 300 m | OpenStreetMap, BD TOPO, INSEE |
 
 **Score = S × T × C** (1 à 27), puis 4 classes de priorité :
-P1 = 27 et pollution active · P2 = 27, ou 18 avec pollution active · P3 = 18 · P4 ≤ 12.
+P1 = 27 et pollution active · P2 = 27 sans pollution active, ou 18 avec pollution active · P3 = 18 sans pollution active · P4 ≤ 12.
 
 ## Résultats
 | | Metz Métropole | Grand Nancy |
